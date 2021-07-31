@@ -103,10 +103,9 @@ ui <- dashboardPage(skin="blue",
                                 )
                         ),
                         tabItem(tabName="data_explore",
-                                
                                 fluidRow(
                                   column(h2("Numerical Summary"),
-                                         width=6,
+                                         width=4,
                                          box( width=12,          
                                              selectInput("var", 
                                                           label=("Variables to Summarize"),
@@ -142,9 +141,10 @@ ui <- dashboardPage(skin="blue",
                                                                           max=100,
                                                                           value=25
                                                                           )
-                                             )
+                                                              
+                                             ),
                                              selectInput("var2", 
-                                                         label=("Row Variables For Two-way table"),
+                                                         label=("Row Variables For Contingency table"),
                                                          c("Age"= "age", 
                                                            "Crtn_phos"="creatinine_phosphokinase",
                                                            "diabetes"="diabetes",
@@ -177,10 +177,15 @@ ui <- dashboardPage(skin="blue",
                                              )
                                          )
                                      ),
-                                     column(width=6,
-                                            box(width=12, DT::dataTableOutput(("Tab2")
-                                            ) 
-                                      )
+                                     column(width=4,
+                                            box(width=12,
+                                                DT::dataTableOutput("Tab2")
+                                            )
+                                      ),
+                                      column(width=4,
+                                             box(width=12, 
+                                                 tableOutput('Tab3')
+                                            )
                                    ),
                                    br(),
                                    fluidRow( 
@@ -255,7 +260,7 @@ ui <- dashboardPage(skin="blue",
                                                                      )
                                                   )
                                             
-                                                )
+                                              )
                                       ),
                                       column(width=9,
                                             box(width=12, 
@@ -267,7 +272,7 @@ ui <- dashboardPage(skin="blue",
                                     )
                                   ),
                                   tabItem(tabName="model",
-                                          tabsetPanel (
+                                          tabsetPanel(
                                             tabPanel( 
                                                      "Modeling Info",
                                                      column(width=4,
@@ -304,7 +309,6 @@ ui <- dashboardPage(skin="blue",
                                                                        )
                                                                     
                                                             ),
-                                                            
                                                            fluidRow(width=12,
                                                                     h3("Formula"),
                                                                     p("\\(Gini: 2p(1-p)\\)"),
@@ -342,8 +346,7 @@ ui <- dashboardPage(skin="blue",
                                                                              max=0.9,
                                                                              value=0.6
                                                                             ),
-                                                                  
-                                                                  uiOutput("independent"),
+                                                                 uiOutput("independent"),
                                                                  numericInput("cp1",
                                                                               label="treeMod cp1",
                                                                               min=0,
@@ -355,7 +358,6 @@ ui <- dashboardPage(skin="blue",
                                                                               label="start"
                                                                   )
                                                              )
-                                              
                                                     ) ,
                                                     column( "modeling results",
                                                            width=3,
@@ -477,9 +479,14 @@ server <- shinyServer(function(input, output) {
             else if (input$sumtype =="quantile") {data.frame(var,round(summarise (heartData,Quantile=quantile(heartData[[var]],probes=input$qvalue/100)),2))}
            else if (input$sumtype =="sd") {data.frame(var,round(summarise (heartData,SD=sd(heartData[[var]])),2))}
   })
-  output$Tab3 <- DT::renderDataTable(
-    heartData2$var2, heartData2$var3
-  )
+  
+  
+  output$Tab3 <- renderTable({
+    var2 <- input$var2
+    var3 <- input$var3
+    as.data.frame.matrix(heartData$var2, heartData$var3)
+  })
+  
   plot <- reactive({
     #create plots
     #make plots based on one variable and different variables respectively 
@@ -549,6 +556,7 @@ server <- shinyServer(function(input, output) {
           )
     }
   })
+  
   treeMod <- reactive({
         if (input$start) { train(
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))), 
@@ -576,20 +584,17 @@ server <- shinyServer(function(input, output) {
   })
   
   output$linMod <- renderPrint({
-  
     linMod()
-   
   })
+  
   output$treeMod <- renderPrint({
-   
       treeMod()
-    
   })
+  
   output$rfMod <- renderPrint({
-   
       rfMod()
-    
   })
+  
   sumMisclass <- reactive ({
     pred_LM <- predict(linMod(), newdata=testData())
     pred_TM <- predict(treeMod(), newdata=testData() )

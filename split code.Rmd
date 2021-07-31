@@ -65,9 +65,9 @@ var <- "serum_sodium"
 heartData %>% group_by(sex) %>% summarise (Avg=mean(serum_sodium))
 heartData %>% filter(sex==0) %>% summarise (Avg=mean(serum_sodium))
 heartData %>% filter(sex==0) %>% summarise (median=median(serum_sodium))
-heartData %>% filter(sex==0) %>% summarise (Minimum=min(serum_sodium))
+Min <-heartData %>% filter(sex==0) %>% summarise (Minimum=min(serum_sodium))
 heartData %>% filter(sex==0) %>% summarise (Maximum=max(serum_sodium))
-heartData %>% filter(sex==0) %>% summarise ("25%"=quantile(serum_sodium, 0.25))
+Quantile <- heartData %>% filter(sex==0) %>% summarise ("25%"=quantile(serum_sodium, probes=0.9))
  summarise (heartData, Avg=mean(serum_sodium))
 
 heartData %>% filter(sex==0) %>% summary(heartData$serum_sodium)
@@ -145,7 +145,7 @@ linMod <- train(
   na.action = na.exclude
   )
 linMod
-
+linMod$results$Accuracy
 ```
 
 ### Tree
@@ -162,6 +162,7 @@ treeMod <- train(
   )
 
 treeMod
+max(treeMod$results$Accuracy)
 ```
 
 ### Random forest
@@ -204,11 +205,6 @@ misclassDf <- data.frame(c("linMod","treeMod","rfMod"),c(mis_LM,mis_TM, mis_RM))
 rename(misclassDf, "Model"=c..linMod....treeMod....rfMod..,"Misclass"=c.mis_LM..mis_TM..mis_RM.)  
 misclassDf
 
-
-summary(testData$DEATH_EVENT )
-
-
-summary(pred_LM)
 ```
 
 ## Prediction
