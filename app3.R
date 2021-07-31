@@ -52,15 +52,15 @@ ui <- dashboardPage(skin="blue",
                                   column(6,
                                        #Description of App
                                        h1("Introduction of Tabs"),
-                                       #box to contain description
+                                      
                                        box(background="light-blue",width=12
                                        )
                                   ),
                                 
                                   column(6,
-                                       #How to use the app
+                                      
                                        h1("Logo"),
-                                       #box to contain description
+                                       
                                        box(background="light-blue",width=12
                                        )
                                   )
