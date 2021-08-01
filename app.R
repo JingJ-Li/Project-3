@@ -5,7 +5,7 @@ library(DT)
 library(dplyr)
 library(ggplot2)
 library(caret)
-
+library(plotly)
 #Define UI part
 ui <- dashboardPage(skin="blue",
                     
@@ -139,8 +139,8 @@ ui <- dashboardPage(skin="blue",
                                                           "time"= "time",
                                                           "DEATH_EVENT"= "DEATH_EVENT"
                                                            ) 
-                                             ),
-                                             
+                                             ),                                             
+
                                              #Set input choice of statistic summary type
                                              selectInput("sumtype", 
                                                         label=("Summary Type"),
@@ -159,8 +159,7 @@ ui <- dashboardPage(skin="blue",
                                                                           min=0,
                                                                           max=100,
                                                                           value=25
-                                                                          )
-                                                              
+                                                                          )                                                              
                                              ),
                                              
                                              #set row variable input choice for contingency table
@@ -215,13 +214,12 @@ ui <- dashboardPage(skin="blue",
                                    #set region for plots
                                    fluidRow( 
                                      column(width=3,h3("Plot parameter input",style="color:blue;"),
-                                            box(width=12, 
-                                                
+                                            box(width=12,                                                 
                                                 # Set plot type input choice
                                                 selectInput("plottype", 
                                                            label=("Plot Type"),
-                                                           c("Histogram"= "histogram", 
-                                                             "Barplot"="bar",
+                                                           c("Barplot"="bar",
+                                                             "Histogram"= "histogram",                                                              
                                                              "Boxplot"="box",
                                                              "Scatterplot"= "point"
                                                             )
@@ -252,7 +250,7 @@ ui <- dashboardPage(skin="blue",
                                                 #set conditional variable input as x uponhbox and scatter plot
                                                 conditionalPanel(condition="input.plottype == box|point",
                                                                    selectInput("xvar2",
-                                                                                  h5("X variable",
+                                                                                  h5("X variable for box/scatter",
                                                                                   style ="color:grey;"),
                                                                                  c("Age"= "age2", 
                                                                                    "Crtn_phos"="creatinine_phosphokinase",
@@ -272,9 +270,9 @@ ui <- dashboardPage(skin="blue",
                                                
                                                 #set conditional variable input as y uponhbox and scatter plot
                                                                     selectInput("yvar",
-                                                                                   h5("Y variable",
+                                                                                   h5("Y variable for box/scatter plot",
                                                                                    style ="color:grey;"),
-                                                                                   c("Age"= "age", 
+                                                                                   c( 
                                                                                      "Crtn_phos"="creatinine_phosphokinase",
                                                                                      "diabetes"="diabetes",
                                                                                      "EjctFrt"= "ejection_fraction",
@@ -285,10 +283,12 @@ ui <- dashboardPage(skin="blue",
                                                                                      "sex"="sex",
                                                                                      "smoking"="smoking",
                                                                                      "time"= "time",
-                                                                                    "DEATH_EVENT"= "DEATH_EVENT"
+                                                                                    "DEATH_EVENT"= "DEATH_EVENT",
+                                                                                    "Age"= "age"
                                                                                       )
                                                                      )
-                                                  )
+                                                )
+                                
                                             
                                               )
                                       ),
@@ -297,7 +297,8 @@ ui <- dashboardPage(skin="blue",
                                       column(h3("Graphic summary", style="color:blue;"),
                                              width=9,
                                             box(width=12, 
-                                                plotOutput("displot")
+                                                plotOutput("displot"),
+                                                plotlyOutput("scatterTxt")
                                             ),
                                             # download plot
                                             downloadButton("fig")      
@@ -337,8 +338,7 @@ ui <- dashboardPage(skin="blue",
                                                                        span("\\(\\beta_0\\)")," the intercept,",
                                                                        span("\\(\\beta_i\\)"),"slops" 
                                                                )
-                                                            )
-                                                           
+                                                            )                                                           
                                                     ),
                                                     column(width=4,
                                                            h3("Classification tree", style="color:blue;"),
@@ -359,8 +359,7 @@ ui <- dashboardPage(skin="blue",
                                                                     "Alternatively" , 
                                                                     p("\\(Deviance: −2plog(p) − 2(1 − p)log(1 − p)\\)")
                                                                 )
-                                                            ),
-                                                           
+                                                            ),                                                           
                                                     ),
                                                     column(width=4,
                                                            h3("Random forest model", style="color:blue;"),
@@ -377,8 +376,7 @@ ui <- dashboardPage(skin="blue",
                                                                     "selection of predictors:" ,
                                                                     p("\\(m=\\sqrt{p}\\)")
                                                                 )
-                                                           ),
-                                                           
+                                                           ),                                                           
                                                      )
                                              ),
                                             tabPanel("Modeling Fit",
@@ -429,8 +427,7 @@ ui <- dashboardPage(skin="blue",
                                                                           min=0,
                                                                           max=1,
                                                                           value=0.003
-                                                             ),
-                                                             
+                                                             ),                                                             
                                                              #set tuning parameter for random forest model
                                                              numericInput("mtry1",
                                                                           label="rfeMod mtry1",
@@ -452,7 +449,7 @@ ui <- dashboardPage(skin="blue",
                                                              ),
                                                            )
                                                     ),
-                                                    
+
                                                     #Output modeling results
                                                     column(width=3,
                                                            verbatimTextOutput("treeMod")
@@ -543,20 +540,19 @@ server <- shinyServer(function(input, output) {
    }
   )
   
+  hrtdata <- reactive(    
+    heartData2
+  )
+
   #output numeric statistic summary table
   output$Tab2 <- DT::renderDataTable ({
     var <-input$var
-    if (input$sumtype =="mean") {data.frame(var,round(summarise (heartData, Avg=mean(heartData[[var]])),2))}
-      else if (input$sumtype =="median") {data.frame(var,round(summarise (heartData,Median=median(heartData[[var]])),2))}
-        else if (input$sumtype =="min") {data.frame(var,round(summarise (heartData,Min=min(heartData[[var]])),2))}
-          else if (input$sumtype =="maxi") {data.frame(var,round(summarise (heartData,Maxi=max(heartData[[var]])),2))}
-            else if (input$sumtype =="quantile") {data.frame(var,round(summarise (heartData,Quantile=quantile(heartData[[var]],probes=input$qvalue/100)),2))}
-           else if (input$sumtype =="sd") {data.frame(var,round(summarise (heartData,SD=sd(heartData[[var]])),2))}
-  })
-  
-  #Create a reactive data table 
-  hrtdata <- reactive({
-    heartData2
+    if (input$sumtype =="mean") {data.frame(var,round(summarise (hrtdata(), Avg=mean(hrtdata()[[var]])),2))}
+      else if (input$sumtype =="median") {data.frame(var,round(summarise (heartData2,Median=median(heartData[[var]])),2))}
+        else if (input$sumtype =="min") {data.frame(var,round(summarise (heartData2,Min=min(heartData[[var]])),2))}
+          else if (input$sumtype =="maxi") {data.frame(var,round(summarise (heartData2,Maxi=max(heartData[[var]])),2))}
+            else if (input$sumtype =="quantile") {data.frame(var,round(summarise (heartData2,Quantile=quantile(heartData[[var]],probes=input$qvalue/100)),2))}
+           else if (input$sumtype =="sd") {data.frame(var,round(summarise (heartData2,SD=sd(heartData[[var]])),2))}
   })
   
   #Create a contigency table
@@ -570,24 +566,31 @@ server <- shinyServer(function(input, output) {
   plot <- reactive({
     if (input$plottype =="bar" ) {
       g <- ggplot (data=heartData2, aes(x=as.factor(heartData2[[input$xvar1]])))
-      g+geom_bar()+xlab(input$xvar1)
+      g + geom_bar()+xlab(input$xvar1)     
     } else if (input$plottype=="histogram" ) { 
       g <- ggplot (data=heartData2, aes(x=heartData2[[input$xvar1]]))
       g+ geom_histogram()+xlab(input$xvar1)
     } else if (input$plottype =="box" ) {
       g <- ggplot (data=heartData2, aes(x=as.factor(heartData2[[input$xvar2]]), y=heartData2[[input$yvar]]))
-      g+geom_boxplot()+geom_jitter(alpha=0.5)+xlab(input$xvar2)+ylab(input$yvar)
-    } else if (input$plottype =="point" ){
-      g <- ggplot (data=heartData2, aes(x=heartData2[[input$xvar2]], y=heartData2[[input$yvar]]))
-      g+geom_point()+xlab(input$xvar2)+ylab(input$yvar)
+      g + geom_boxplot()+geom_jitter(alpha=0.5)+xlab(input$xvar2)+ylab(input$yvar)       
     }
   })
   
-  #output plot
+  #Output plot
   output$displot <- renderPlot({
-    plot()
+    plot()     
   })
   
+  #Output a scatter plot with hovering text  
+  output$scatterTxt <- renderPlotly({
+    x=heartData2[[input$xvar2]]
+    y=heartData2[[input$yvar]]
+    if (input$plottype =="point"){
+       ggplotly( ggplot (data=heartData2, aes(x, y))
+       + geom_point()+ xlab(input$xvar2)+ylab(input$yvar))    
+    } 
+  })
+
   #Save a plot 
   output$fig = downloadHandler(
     filename = 'figure.png',
@@ -658,7 +661,7 @@ server <- shinyServer(function(input, output) {
   
   #Fit training data using random forest model
   rfMod <- reactive({
-    if (input$start) { train (
+    if (input$start) {train (
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))),  
           data=trainData(),
           method = "rf",

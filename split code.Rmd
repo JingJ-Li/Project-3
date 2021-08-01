@@ -89,6 +89,9 @@ data.frame("serum_sodium", summarise (heartData, Avg=mean(serum_sodium)))
 ```{r}
 g1<- ggplot(heartData, aes (x= as.factor(sex), y=platelets, color=sex))
 g1+ geom_boxplot()+  geom_jitter(alpha=0.5)
+
+    p <- plot_ly(data=heartData2, x=~creatinine_phosphokinase,y=~ejection_fraction, type = 'scatter', mode="text")
+    p
 ```
 
 ### barplot
