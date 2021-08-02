@@ -548,8 +548,8 @@ ui <- dashboardPage(skin="blue",
 
                                                             #Set start button to launch prediction 
                                                             actionButton(
-                                                              "start",
-                                                              label="start"
+                                                              "predict",
+                                                              label="predict"
                                                             )
                                                       ),
                                                       
@@ -724,20 +724,25 @@ server <- shinyServer(function(input, output) {
 
   #Fit training data using logistic regression model
   linMod <-  reactive({
-    if (input$start) {train(
+    if (input$start) {
+        withProgress(message ='Linear regression Modeling', value=1, {
+         train(
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))), 
           data=trainData(), 
           method="glm",
           family="binomial",
           trControl=trCntrl,
           na.action = na.exclude
-          )
+          ) 
+          
+        })
     }
   })
   
   #Fit training data using tree classification model
   treeMod <- reactive({
-        if (input$start) { train(
+        if (input$start) { 
+          withProgress(message ='Tree Classification Modeling', value=1, {train(
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))), 
           data=trainData(), 
           method="rpart",
@@ -745,13 +750,15 @@ server <- shinyServer(function(input, output) {
           trControl=trCntrl,
           na.action = na.exclude,
           tuneGrid=expand.grid(cp = seq(input$cp1, input$cp2, input$cp3))
-        )
+          )
+          })
         }
   })
   
   #Fit training data using random forest model
   rfMod <- reactive({
-    if (input$start) {train (
+    if (input$start) {
+      withProgress(message ='Random Forest Modeling', value=1, {train (
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))),  
           data=trainData(),
           method = "rf",
@@ -760,6 +767,7 @@ server <- shinyServer(function(input, output) {
           tuneGrid=expand.grid(mtry=seq(input$mtry1,input$mtry2, input$mtry3)),
           na.action = na.exclude
         )
+      })
      }
   })
   
@@ -779,7 +787,8 @@ server <- shinyServer(function(input, output) {
   })
   
   #Compare three models using summarized prediction results upon running on test data
-  sumMisclass <- reactive ({
+  sumMisclass <- reactive (
+    if (input$start){
     pred_LM <- predict(linMod(), newdata=testData())
     pred_TM <- predict(treeMod(), newdata=testData() )
     pred_RM <- predict(rfMod(), newdata=testData() )
@@ -806,9 +815,8 @@ server <- shinyServer(function(input, output) {
   })
 
   #Predict the response from input variable values
-  pred <- reactive({
-    if (!input$start) {stop}
-     else if (input$modtype2 == "glm"){
+  pred <- reactive( if (input$predict) {    
+    if (input$modtype2 == "glm"){
        predict(linMod(), newdata=inputData2())
     } else if (input$modtype2 == "rpart"){
       predict(treeMod(), newdata=inputData2())
@@ -818,7 +826,7 @@ server <- shinyServer(function(input, output) {
   })
 
   #Output prediction result
-  output$pred <- renderPrint({
+  output$pred <- renderPrint(if (input$predict) {
     pred()
   })   
 }) 

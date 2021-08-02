@@ -120,12 +120,12 @@ ui <- dashboardPage(skin="blue",
                         # Third tab content
                         tabItem(tabName="data_explore",
                                 fluidRow(
-                                  column(h3("Table parameter input ",style="color:blue;"),
+                                  column(h3("Datas subsetting parameter input ",style="color:blue;"),
                                          width=4,
                                          box( width=12,          
                                              #Set input choice of variable for numeric summary table
                                              selectInput("var", 
-                                                          label=("Variables to Summarize"),
+                                                          label=("Variables for subseting data and summary "),
                                                          c("age"= "age", 
                                                            "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                            "diabetes"="diabetes",
@@ -141,7 +141,7 @@ ui <- dashboardPage(skin="blue",
                                                             "DEATH_EVENT"= "DEATH_EVENT"
                                                            ) 
                                              ),               
-                                            #  uiOutput("filter"),
+                                            # input variable values in response to chosen variables
                                              conditionalPanel(condition="input.var == 'age'",
                                                              numericInput("age","age",min=0, max=100, value=50)
                                              ),
@@ -179,11 +179,27 @@ ui <- dashboardPage(skin="blue",
                                                              numericInput("time","time",min=0, max=90,value=45)
                                               ),
                                               conditionalPanel(condition="input.var == 'DEATH_EVENT'",             
-                                                             numericInput("DEATH_EVENT","DEATH_EVENT",min=0, max=1,value=1)
-
-                                                             
+                                                             numericInput("DEATH_EVENT","DEATH_EVENT",min=0, max=1,value=1)                                                             
                                               ),
-
+                                              #set input variable for summary table
+                                              selectInput("svar", 
+                                                          label=("Variables for summary table"),
+                                                         c("age"= "age", 
+                                                           "creatinine_phosphokinase"="creatinine_phosphokinase",
+                                                           "diabetes"="diabetes",
+                                                            "anaemia"="anaemia",
+                                                           "ejection_fraction"= "ejection_fraction",
+                                                           "high_blood_pressure"="high_blood_pressure",
+                                                           "platelets"="platelets",
+                                                            "serum_creatinine"= "serum_creatinine",
+                                                            "serum_sodium"=  "serum_sodium",
+                                                            "sex"="sex",
+                                                            "smoking"="smoking",
+                                                            "time"= "time",
+                                                            "DEATH_EVENT"= "DEATH_EVENT"
+                                                           ) 
+                                             ),
+                                             
                                              #Set input choice of statistic summary type
                                              selectInput("sumtype", 
                                                         label=("Summary Type"),
@@ -195,8 +211,9 @@ ui <- dashboardPage(skin="blue",
                                                            "SD"="sd" 
                                                          )
                                               ),
+                                                
                                              # set input choice of quantile parameters upon quantile summary
-                                             conditionalPanel(condition="input.sumtype == quantile",
+                                             conditionalPanel(condition="input.sumtype == 'quantile'",
                                                               sliderInput("qvalue",
                                                                           label="quantile input",
                                                                           min=0,
@@ -530,7 +547,7 @@ ui <- dashboardPage(skin="blue",
                                                                              "Random forest"="random_forest"
                                                                           )
                                                               ),
-                                                            #Define the range of variable value for prediction
+                                                              #Define the range of variable value for prediction
                                                              numericInput("age","age",min=0, max=100, value=50),
                                                              numericInput("anaemia","anaemia",min=0, max=1,value=1),
                                                              numericInput("creatinine_phosphokinase","creatinine_phosphokinase",min=0, max=8000, value=1000),
@@ -545,11 +562,11 @@ ui <- dashboardPage(skin="blue",
                                                             numericInput("sex","sex",min=0, max=1, value=1),
                                                             numericInput("smoking","smoking",min=0, max=1, value=1),
                                                             numericInput("time","time",min=0, max=90,value=45),
-
+ 
                                                             #Set start button to launch prediction 
                                                             actionButton(
-                                                              "start",
-                                                              label="start"
+                                                              "predict",
+                                                              label="predict"
                                                             )
                                                       ),
                                                       
@@ -636,7 +653,7 @@ server <- shinyServer(function(input, output) {
 
   #output numeric statistic summary table
   output$Tab2 <- DT::renderDataTable ({
-    var <-input$var
+    var <-input$svar
     if (input$sumtype =="mean") {data.frame(var,round(summarise (hrtdata(), Avg=mean(hrtdata()[[var]])),2))}
       else if (input$sumtype =="median") {data.frame(var,round(summarise (hrtdata(),Median=median(hrtdata()[[var]])),2))}
         else if (input$sumtype =="min") {data.frame(var,round(summarise (hrtdata(),Min=min(hrtdata()[[var]])),2))}
@@ -724,20 +741,25 @@ server <- shinyServer(function(input, output) {
 
   #Fit training data using logistic regression model
   linMod <-  reactive({
-    if (input$start) {train(
+    if (input$start) {
+        withProgress(message ='Linear regression Modeling', value=1, {
+         train(
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))), 
           data=trainData(), 
           method="glm",
           family="binomial",
           trControl=trCntrl,
           na.action = na.exclude
-          )
+          ) 
+          
+        })
     }
   })
   
   #Fit training data using tree classification model
   treeMod <- reactive({
-        if (input$start) { train(
+        if (input$start) { 
+          withProgress(message ='Tree Classification Modeling', value=1, {train(
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))), 
           data=trainData(), 
           method="rpart",
@@ -745,13 +767,15 @@ server <- shinyServer(function(input, output) {
           trControl=trCntrl,
           na.action = na.exclude,
           tuneGrid=expand.grid(cp = seq(input$cp1, input$cp2, input$cp3))
-        )
+          )
+          })
         }
   })
   
   #Fit training data using random forest model
   rfMod <- reactive({
-    if (input$start) {train (
+    if (input$start) {
+      withProgress(message ='Random Forest Modeling', value=1, {train (
           as.formula(paste("DEATH_EVENT"," ~ ", paste(input$independent,collapse="+"))),  
           data=trainData(),
           method = "rf",
@@ -760,6 +784,7 @@ server <- shinyServer(function(input, output) {
           tuneGrid=expand.grid(mtry=seq(input$mtry1,input$mtry2, input$mtry3)),
           na.action = na.exclude
         )
+      })
      }
   })
   
@@ -779,7 +804,8 @@ server <- shinyServer(function(input, output) {
   })
   
   #Compare three models using summarized prediction results upon running on test data
-  sumMisclass <- reactive ({
+  sumMisclass <- reactive (
+    if (input$start){
     pred_LM <- predict(linMod(), newdata=testData())
     pred_TM <- predict(treeMod(), newdata=testData() )
     pred_RM <- predict(rfMod(), newdata=testData() )
@@ -806,9 +832,8 @@ server <- shinyServer(function(input, output) {
   })
 
   #Predict the response from input variable values
-  pred <- reactive({
-    if (!input$start) {stop}
-     else if (input$modtype2 == "glm"){
+  pred <- reactive( if (input$predict) {    
+    if (input$modtype2 == "glm"){
        predict(linMod(), newdata=inputData2())
     } else if (input$modtype2 == "rpart"){
       predict(treeMod(), newdata=inputData2())
@@ -818,7 +843,7 @@ server <- shinyServer(function(input, output) {
   })
 
   #Output prediction result
-  output$pred <- renderPrint({
+  output$pred <- renderPrint(if (input$predict) {
     pred()
   })   
 }) 
