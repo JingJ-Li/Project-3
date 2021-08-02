@@ -126,12 +126,12 @@ ui <- dashboardPage(skin="blue",
                                              #Set input choice of variable for numeric summary table
                                              selectInput("var", 
                                                           label=("Variables to Summarize"),
-                                                         c("Age"= "age", 
-                                                           "Crtn_phos"="creatinine_phosphokinase",
+                                                         c("age"= "age", 
+                                                           "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                            "diabetes"="diabetes",
                                                             "anaemia"="anaemia",
-                                                           "EjctFrt"= "ejection_fraction",
-                                                           "Hi_Bld_Pres"="high_blood_pressure",
+                                                           "ejection_fraction"= "ejection_fraction",
+                                                           "high_blood_pressure"="high_blood_pressure",
                                                            "platelets"="platelets",
                                                             "serum_creatinine"= "serum_creatinine",
                                                             "serum_sodium"=  "serum_sodium",
@@ -151,33 +151,39 @@ ui <- dashboardPage(skin="blue",
                                              conditionalPanel(condition="input.var ==  'creatinine_phosphokinase'",                                                                        
                                                              numericInput("creatinine_phosphokinase","creatinine_phosphokinase",min=0, max=8000, value=1000)
                                               ),
-                                             conditionalPanel(condition="input.filter == diabetes",
+                                             conditionalPanel(condition="input.var == 'diabetes'",
                                                              numericInput("diabetes","diabetes",min=0, max=1,value=1)
                                               ),
-                                             conditionalPanel(condition="input.filter == ejection_fraction",
+                                             conditionalPanel(condition="input.var == 'ejection_fraction'",
                                                              numericInput("ejection_fraction","ejection_fraction",min=0, max=70,value=35)
                                               ),
-                                              conditionalPanel(condition="input.filter == high_blood_pressure",
+                                              conditionalPanel(condition="input.var == 'high_blood_pressure'",
                                                              numericInput("high_blood_pressure","high_blood_pressure",min=0, max=1,value=1))
                                               ,
-                                              conditionalPanel(condition="input.filter == platelets",
+                                              conditionalPanel(condition="input.var == 'platelets'",
                                                              numericInput("platelets","platelets",min=0, max=263358.03,value=188000)
                                               ),
-                                               conditionalPanel(condition="input.filter == serum_creatinine",                                               
+                                               conditionalPanel(condition="input.var == 'serum_creatinine'",                                               
                                                              numericInput("serum_creatinine","serum_creatinine",min=0, max=10,value=5)
                                               ),
-                                              conditionalPanel(condition="input.filter == serum_creatinine",     
+                                              conditionalPanel(condition="input.var == 'serum_sodium'",     
                                                              numericInput("serum_sodium","serum_sodium",min=0, max=200,value=140)
                                               ),
-                                              conditionalPanel(condition="input.filter == serum_creatinine", 
+                                              conditionalPanel(condition="input.var== 'sex'", 
                                                              numericInput("sex","sex",min=0, max=1, value=1)
                                               ),
-                                              conditionalPanel(condition="input.filter == smoking", 
+                                              conditionalPanel(condition="input.var == 'smoking'", 
                                                              numericInput("smoking","smoking",min=0, max=1, value=1)
                                               ),
-                                              conditionalPanel(condition="input.filter == time",             
+                                              conditionalPanel(condition="input.var == 'time'",             
                                                              numericInput("time","time",min=0, max=90,value=45)
                                               ),
+                                              conditionalPanel(condition="input.var == 'DEATH_EVENT'",             
+                                                             numericInput("DEATH_EVENT","DEATH_EVENT",min=0, max=1,value=1)
+
+                                                             
+                                              ),
+
                                              #Set input choice of statistic summary type
                                              selectInput("sumtype", 
                                                         label=("Summary Type"),
@@ -243,6 +249,7 @@ ui <- dashboardPage(skin="blue",
                                              width=4,
                                              box(width=12, 
                                                  tableOutput('Tab3')
+                                                 
                                             )
                                    ),
                                    #Add a breakline
@@ -595,38 +602,38 @@ server <- shinyServer(function(input, output) {
      checkboxGroupInput("filter", "filter Variable", names(heartData))
    })
 
-  hrtdata <- reactive( {
+  hrtdata <- reactive( 
     
    if (input$var=='age'){  
      heartData2 <-filter(heartData2,heartData2$age == input$age)
-     } else if (input$filter=='anaemia'){ 
+     } else if (input$var=='anaemia'){ 
          heartData2  <-filter(heartData2,heartData2$anaemia == input$anaemia)      
-          } else if (input$filter=='creatinine_phosphokinase'){ 
+          } else if (input$var=='creatinine_phosphokinase'){ 
           heartData2  <-filter(heartData2,heartData2$creatinine_phosphokinase == input$creatinine_phosphokinase) 
-          } else if (input$filter=='diabetes'){ 
+          } else if (input$var=='diabetes'){ 
           heartData2  <-filter(heartData2,heartData2$diabetes == input$diabetes)
-          } else if (input$filter=='ejection_fraction'){ 
+          } else if (input$var=='ejection_fraction'){ 
           heartData2  <-filter(heartData2,heartData2$ejection_fraction == input$ejection_fraction)
-          } else if (input$filter=='high_blood_pressure'){ 
-          heartData2  <-filter(heartData2,heartData2$high_blood_pressure== input$high_blood_pressure)
-          } else if (input$filter=='platelets'){ 
-          heartData2  <-filter(heartData2,heartData2$platelets== input$platelets)
-          } else if (input$filter=='serum_creatinine'){ 
+          } else if (input$var=='high_blood_pressure'){ 
+          heartData2  <-filter(heartData2,heartData2$high_blood_pressure == input$high_blood_pressure)
+          } else if (input$var=='platelets'){ 
+          heartData2  <-filter(heartData2,heartData2$platelets == input$platelets)
+          } else if (input$var=='serum_creatinine'){ 
           heartData2  <-filter(heartData2,heartData2$serum_creatinine== input$serum_creatinine)
-          } else if (input$filter=='serum_sodium'){ 
+          } else if (input$var=='serum_sodium'){ 
           heartData2  <-filter(heartData2,heartData2$serum_sodium== input$serum_sodium)
-          } else if (input$filter=='smoking'){ 
-          heartData2  <-filter(heartData2,heartData2$serum_smoking== input$smoking)
-          } else if (input$filter=='time'){ 
+          } else if (input$var=='smoking'){ 
+          heartData2  <-filter(heartData2,heartData2$smoking== input$smoking)
+          } else if (input$var=='time'){ 
           heartData2  <-filter(heartData2,heartData2$time== input$time)
-          } else if (input$filter=='sex'){ 
+          } else if (input$var=='sex'){ 
           heartData2  <-filter(heartData2,heartData2$sex == input$sex)      
+          }   
+          else if (input$var=='DEATH_EVENT'){ 
+          heartData2  <-filter(heartData2,heartData2$DEATH_EVENT == input$DEATH_EVENT)      
           }    
-  })
-  output$hrtData <- DT::renderDataTable({
-   hrtdata()  
-   
-  })
+  )
+
   #output numeric statistic summary table
   output$Tab2 <- DT::renderDataTable ({
     var <-input$var

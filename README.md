@@ -12,6 +12,7 @@ The following packages are required to run the app
 - `dplyr`: manipulate data like filter and subset etc.
 - `ggplot2`: a nice plot package
 - `caret`: a powerful modeling package  
+- `plotly`: Hovering with text onto the plots
 
 ## Codes for installing packages
 - `install.packages()`  
