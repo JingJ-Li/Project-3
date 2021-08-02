@@ -229,7 +229,13 @@ ui <- dashboardPage(skin="blue",
                                                            "Hi_Bld_Pres"="high_blood_pressure",
                                                            "sex"="sex",
                                                            "smoking"="smoking",
-                                                           "DEATH_EVENT"= "DEATH_EVENT"
+                                                           "DEATH_EVENT"= "DEATH_EVENT",
+                                                           "creatinine_phosphokinase"="creatinine_phosphokinase",
+                                                           "ejection_fraction"= "ejection_fraction",
+                                                           "platelets"="platelets",
+                                                           "serum_creatinine"= "serum_creatinine",
+                                                           "serum_sodium"=  "serum_sodium",
+                                                           "time"= "time"
                                                          ) 
                                              ),
                                              
@@ -237,17 +243,17 @@ ui <- dashboardPage(skin="blue",
                                              selectInput("var3", 
                                                          label=("Column Variables For Contingency table"),
                                                          c("Age"= "age2", 
-                                                           "Hi_Bld_Pres"="high_blood_pressure",
+                                                           "high_blood_pressure"="high_blood_pressure",
                                                            "sex"="sex",
                                                            "smoking"="smoking",
                                                            "DEATH_EVENT"= "DEATH_EVENT",
                                                            "creatinine_phosphokinase"="creatinine_phosphokinase",
-                                                           "EjctFrt"= "ejection_fraction",
+                                                           "ejection_fraction"= "ejection_fraction",
                                                            "platelets"="platelets",
                                                            "serum_creatinine"= "serum_creatinine",
                                                            "serum_sodium"=  "serum_sodium",
-                                                           "time"= "time",
-                                                           "DEATH_EVENT"= "DEATH_EVENT"
+                                                           "time"= "time"
+
                                                          ) 
                                              )
                                          )
@@ -265,9 +271,9 @@ ui <- dashboardPage(skin="blue",
                                       column(h3("Contingency Table",style="color:blue;"),
                                              width=4,
                                              box(width=12, 
-                                                 tableOutput('Tab3')
+                                                 DT::dataTableOutput('Tab3')
                                                  
-                                            )
+                                             )
                                    ),
                                    #Add a breakline
                                                                                                   
@@ -622,32 +628,32 @@ server <- shinyServer(function(input, output) {
   hrtdata <- reactive( 
     
    if (input$var=='age'){  
-     heartData2 <-filter(heartData2,heartData2$age == input$age)
+     filter(heartData2,heartData2$age == input$age)
      } else if (input$var=='anaemia'){ 
-         heartData2  <-filter(heartData2,heartData2$anaemia == input$anaemia)      
+         filter(heartData2,heartData2$anaemia == input$anaemia)      
           } else if (input$var=='creatinine_phosphokinase'){ 
-          heartData2  <-filter(heartData2,heartData2$creatinine_phosphokinase == input$creatinine_phosphokinase) 
+          filter(heartData2,heartData2$creatinine_phosphokinase == input$creatinine_phosphokinase) 
           } else if (input$var=='diabetes'){ 
-          heartData2  <-filter(heartData2,heartData2$diabetes == input$diabetes)
+          filter(heartData2,heartData2$diabetes == input$diabetes)
           } else if (input$var=='ejection_fraction'){ 
-          heartData2  <-filter(heartData2,heartData2$ejection_fraction == input$ejection_fraction)
+          filter(heartData2,heartData2$ejection_fraction == input$ejection_fraction)
           } else if (input$var=='high_blood_pressure'){ 
-          heartData2  <-filter(heartData2,heartData2$high_blood_pressure == input$high_blood_pressure)
+          filter(heartData2,heartData2$high_blood_pressure == input$high_blood_pressure)
           } else if (input$var=='platelets'){ 
-          heartData2  <-filter(heartData2,heartData2$platelets == input$platelets)
+          filter(heartData2,heartData2$platelets == input$platelets)
           } else if (input$var=='serum_creatinine'){ 
-          heartData2  <-filter(heartData2,heartData2$serum_creatinine== input$serum_creatinine)
+          filter(heartData2,heartData2$serum_creatinine== input$serum_creatinine)
           } else if (input$var=='serum_sodium'){ 
-          heartData2  <-filter(heartData2,heartData2$serum_sodium== input$serum_sodium)
+          filter(heartData2,heartData2$serum_sodium== input$serum_sodium)
           } else if (input$var=='smoking'){ 
-          heartData2  <-filter(heartData2,heartData2$smoking== input$smoking)
+          filter(heartData2,heartData2$smoking== input$smoking)
           } else if (input$var=='time'){ 
-          heartData2  <-filter(heartData2,heartData2$time== input$time)
+          filter(heartData2,heartData2$time== input$time)
           } else if (input$var=='sex'){ 
-          heartData2  <-filter(heartData2,heartData2$sex == input$sex)      
+          filter(heartData2,heartData2$sex == input$sex)      
           }   
           else if (input$var=='DEATH_EVENT'){ 
-          heartData2  <-filter(heartData2,heartData2$DEATH_EVENT == input$DEATH_EVENT)      
+          filter(heartData2,heartData2$DEATH_EVENT == input$DEATH_EVENT)      
           }    
   )
 
@@ -663,7 +669,7 @@ server <- shinyServer(function(input, output) {
   })
   
   #Create a contigency table
-  output$Tab3 <- renderTable({
+  output$Tab3 <- DT::renderDataTable({
     validate(need(input$var2,''),
              need(input$var3,''))
     addmargins(xtabs(as.formula(paste0("~",input$var2,"+",input$var3)), hrtdata()))
