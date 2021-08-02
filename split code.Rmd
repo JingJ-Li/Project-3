@@ -83,6 +83,7 @@ data.frame("serum_sodium", summarise (heartData, Avg=mean(serum_sodium)))
     if (input$sumtype =="sd") {data.frame(input$var,summarise (SD=sd(input$var)))}
  heartData$sex <- as.factor(heartData$sex)
     table <- table(heartData$sex, heartData$age2)
+    heartData  <-dplyr::filter(heartData2,heartData2$age == 50)
 ```
 ## plot summary
 ### boxplot

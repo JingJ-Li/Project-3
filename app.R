@@ -45,7 +45,7 @@ ui <- dashboardPage(skin="blue",
                                   
                                   #Data page introduction
                                   column(6,
-                                         h1("  Introduction of Data",style="color:blue;"),
+                                         h1("Introduction of Data",style="color:blue;"),
                                          #box to contain description
                                          box(width=12,
                                              h3("The data was downloaded from ",
@@ -129,6 +129,7 @@ ui <- dashboardPage(skin="blue",
                                                          c("Age"= "age", 
                                                            "Crtn_phos"="creatinine_phosphokinase",
                                                            "diabetes"="diabetes",
+                                                            "anaemia"="anaemia",
                                                            "EjctFrt"= "ejection_fraction",
                                                            "Hi_Bld_Pres"="high_blood_pressure",
                                                            "platelets"="platelets",
@@ -136,11 +137,47 @@ ui <- dashboardPage(skin="blue",
                                                             "serum_sodium"=  "serum_sodium",
                                                             "sex"="sex",
                                                             "smoking"="smoking",
-                                                          "time"= "time",
-                                                          "DEATH_EVENT"= "DEATH_EVENT"
+                                                            "time"= "time",
+                                                            "DEATH_EVENT"= "DEATH_EVENT"
                                                            ) 
-                                             ),                                             
-
+                                             ),               
+                                            #  uiOutput("filter"),
+                                             conditionalPanel(condition="input.var == 'age'",
+                                                             numericInput("age","age",min=0, max=100, value=50)
+                                             ),
+                                             conditionalPanel(condition="input.var == 'anaemia'",
+                                                            numericInput("anaemia","anaemia",min=0, max=1,value=1)
+                                              ),                
+                                             conditionalPanel(condition="input.var ==  'creatinine_phosphokinase'",                                                                        
+                                                             numericInput("creatinine_phosphokinase","creatinine_phosphokinase",min=0, max=8000, value=1000)
+                                              ),
+                                             conditionalPanel(condition="input.filter == diabetes",
+                                                             numericInput("diabetes","diabetes",min=0, max=1,value=1)
+                                              ),
+                                             conditionalPanel(condition="input.filter == ejection_fraction",
+                                                             numericInput("ejection_fraction","ejection_fraction",min=0, max=70,value=35)
+                                              ),
+                                              conditionalPanel(condition="input.filter == high_blood_pressure",
+                                                             numericInput("high_blood_pressure","high_blood_pressure",min=0, max=1,value=1))
+                                              ,
+                                              conditionalPanel(condition="input.filter == platelets",
+                                                             numericInput("platelets","platelets",min=0, max=263358.03,value=188000)
+                                              ),
+                                               conditionalPanel(condition="input.filter == serum_creatinine",                                               
+                                                             numericInput("serum_creatinine","serum_creatinine",min=0, max=10,value=5)
+                                              ),
+                                              conditionalPanel(condition="input.filter == serum_creatinine",     
+                                                             numericInput("serum_sodium","serum_sodium",min=0, max=200,value=140)
+                                              ),
+                                              conditionalPanel(condition="input.filter == serum_creatinine", 
+                                                             numericInput("sex","sex",min=0, max=1, value=1)
+                                              ),
+                                              conditionalPanel(condition="input.filter == smoking", 
+                                                             numericInput("smoking","smoking",min=0, max=1, value=1)
+                                              ),
+                                              conditionalPanel(condition="input.filter == time",             
+                                                             numericInput("time","time",min=0, max=90,value=45)
+                                              ),
                                              #Set input choice of statistic summary type
                                              selectInput("sumtype", 
                                                         label=("Summary Type"),
@@ -181,7 +218,7 @@ ui <- dashboardPage(skin="blue",
                                                            "sex"="sex",
                                                            "smoking"="smoking",
                                                            "DEATH_EVENT"= "DEATH_EVENT",
-                                                           "Crtn_phos"="creatinine_phosphokinase",
+                                                           "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                            "EjctFrt"= "ejection_fraction",
                                                            "platelets"="platelets",
                                                            "serum_creatinine"= "serum_creatinine",
@@ -209,10 +246,11 @@ ui <- dashboardPage(skin="blue",
                                             )
                                    ),
                                    #Add a breakline
-                                   br(),
-                                  
+                                                                                                  
+                                  ),
+                                  br(),
                                    #set region for plots
-                                   fluidRow( 
+                                   fluidRow(
                                      column(width=3,h3("Plot parameter input",style="color:blue;"),
                                             box(width=12,                                                 
                                                 # Set plot type input choice
@@ -226,12 +264,12 @@ ui <- dashboardPage(skin="blue",
                                                  ),
                                                 
                                                 #set conditional variable input upon histogram and bar plot
-                                                conditionalPanel(condition="input.plottype == histogram|bar",
-                                                             selectInput("xvar1",
-                                                                            h5("X variable for count",
+                                                conditionalPanel(condition="input.plottype == bar",
+                                                             selectInput("xvar1A",
+                                                                            h5("X variable for bar",
                                                                                style ="color:grey;"),
                                                                             c("Age"= "age2", 
-                                                                              "Crtn_phos"="creatinine_phosphokinase",
+                                                                              "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                                               "diabetes"="diabetes",
                                                                               "EjctFrt"= "ejection_fraction",
                                                                               "Hi_Bld_Pres"="high_blood_pressure",
@@ -246,14 +284,29 @@ ui <- dashboardPage(skin="blue",
                                                                )
                                                   
                                                 ),
-                                                
+                                                conditionalPanel(condition="input.plottype == histogram",
+                                                             selectInput("xvar1B",
+                                                                            h5("X variable for histogram",
+                                                                               style ="color:grey;"),
+                                                                            c("Age"= "age", 
+                                                                              "creatinine_phosphokinase"="creatinine_phosphokinase",                                                                             
+                                                                              "EjctFrt"= "ejection_fraction",                                                                             
+                                                                              "platelets"="platelets",
+                                                                              "serum_creatinine"= "serum_creatinine",
+                                                                              "serum_sodium"=  "serum_sodium",                                                                             
+                                                                              "time"= "time",
+                                                                              "DEATH_EVENT"= "DEATH_EVENT"
+                                                                            )
+                                                               )
+                                                  
+                                                ),
                                                 #set conditional variable input as x uponhbox and scatter plot
                                                 conditionalPanel(condition="input.plottype == box|point",
                                                                    selectInput("xvar2",
                                                                                   h5("X variable for box/scatter",
                                                                                   style ="color:grey;"),
                                                                                  c("Age"= "age2", 
-                                                                                   "Crtn_phos"="creatinine_phosphokinase",
+                                                                                   "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                                                    "diabetes"="diabetes",
                                                                                     "EjctFrt"= "ejection_fraction",
                                                                                    "Hi_Bld_Pres"="high_blood_pressure",
@@ -290,9 +343,8 @@ ui <- dashboardPage(skin="blue",
                                                 )
                                 
                                             
-                                              )
-                                      ),
-                                      
+                                              ),
+
                                       # Output plots 
                                       column(h3("Graphic summary", style="color:blue;"),
                                              width=9,
@@ -305,7 +357,7 @@ ui <- dashboardPage(skin="blue",
                                       )
                                     
                                     )
-                                  ),
+                                ),
                         
                                 # Forth tab content
                                   tabItem(tabName="model",
@@ -504,7 +556,7 @@ ui <- dashboardPage(skin="blue",
                        )                      
                     )
 ) 
-                        
+                       
 # Define server  
 server <- shinyServer(function(input, output) {
     # read in data and convert forms
@@ -539,20 +591,51 @@ server <- shinyServer(function(input, output) {
     write.csv(get_tab(), file, row.names = FALSE)
    }
   )
-  
-  hrtdata <- reactive(    
-    heartData2
-  )
+   output$filter <- renderUI({
+     checkboxGroupInput("filter", "filter Variable", names(heartData))
+   })
 
+  hrtdata <- reactive( {
+    
+   if (input$var=='age'){  
+     heartData2 <-filter(heartData2,heartData2$age == input$age)
+     } else if (input$filter=='anaemia'){ 
+         heartData2  <-filter(heartData2,heartData2$anaemia == input$anaemia)      
+          } else if (input$filter=='creatinine_phosphokinase'){ 
+          heartData2  <-filter(heartData2,heartData2$creatinine_phosphokinase == input$creatinine_phosphokinase) 
+          } else if (input$filter=='diabetes'){ 
+          heartData2  <-filter(heartData2,heartData2$diabetes == input$diabetes)
+          } else if (input$filter=='ejection_fraction'){ 
+          heartData2  <-filter(heartData2,heartData2$ejection_fraction == input$ejection_fraction)
+          } else if (input$filter=='high_blood_pressure'){ 
+          heartData2  <-filter(heartData2,heartData2$high_blood_pressure== input$high_blood_pressure)
+          } else if (input$filter=='platelets'){ 
+          heartData2  <-filter(heartData2,heartData2$platelets== input$platelets)
+          } else if (input$filter=='serum_creatinine'){ 
+          heartData2  <-filter(heartData2,heartData2$serum_creatinine== input$serum_creatinine)
+          } else if (input$filter=='serum_sodium'){ 
+          heartData2  <-filter(heartData2,heartData2$serum_sodium== input$serum_sodium)
+          } else if (input$filter=='smoking'){ 
+          heartData2  <-filter(heartData2,heartData2$serum_smoking== input$smoking)
+          } else if (input$filter=='time'){ 
+          heartData2  <-filter(heartData2,heartData2$time== input$time)
+          } else if (input$filter=='sex'){ 
+          heartData2  <-filter(heartData2,heartData2$sex == input$sex)      
+          }    
+  })
+  output$hrtData <- DT::renderDataTable({
+   hrtdata()  
+   
+  })
   #output numeric statistic summary table
   output$Tab2 <- DT::renderDataTable ({
     var <-input$var
     if (input$sumtype =="mean") {data.frame(var,round(summarise (hrtdata(), Avg=mean(hrtdata()[[var]])),2))}
-      else if (input$sumtype =="median") {data.frame(var,round(summarise (heartData2,Median=median(heartData[[var]])),2))}
-        else if (input$sumtype =="min") {data.frame(var,round(summarise (heartData2,Min=min(heartData[[var]])),2))}
-          else if (input$sumtype =="maxi") {data.frame(var,round(summarise (heartData2,Maxi=max(heartData[[var]])),2))}
-            else if (input$sumtype =="quantile") {data.frame(var,round(summarise (heartData2,Quantile=quantile(heartData[[var]],probes=input$qvalue/100)),2))}
-           else if (input$sumtype =="sd") {data.frame(var,round(summarise (heartData2,SD=sd(heartData[[var]])),2))}
+      else if (input$sumtype =="median") {data.frame(var,round(summarise (hrtdata(),Median=median(hrtdata()[[var]])),2))}
+        else if (input$sumtype =="min") {data.frame(var,round(summarise (hrtdata(),Min=min(hrtdata()[[var]])),2))}
+          else if (input$sumtype =="maxi") {data.frame(var,round(summarise (hrtdata(),Maxi=max(hrtdata()[[var]])),2))}
+            else if (input$sumtype =="quantile") {data.frame(var,round(summarise (hrtdata(),Quantile=quantile(hrtdata()[[var]],probes=input$qvalue/100)),2))}
+           else if (input$sumtype =="sd") {data.frame(var,round(summarise (hrtdata(),SD=sd(hrtdata()[[var]])),2))}
   })
   
   #Create a contigency table
@@ -565,13 +648,13 @@ server <- shinyServer(function(input, output) {
   #create plots and make plots based on one variable and different variables respectively 
   plot <- reactive({
     if (input$plottype =="bar" ) {
-      g <- ggplot (data=heartData2, aes(x=as.factor(heartData2[[input$xvar1]])))
-      g + geom_bar()+xlab(input$xvar1)     
+      g <- ggplot (data=hrtdata(), aes(x=as.factor(hrtdata()[[input$xvar1A]])))
+      g + geom_bar()+xlab(input$xvar1A)     
     } else if (input$plottype=="histogram" ) { 
-      g <- ggplot (data=heartData2, aes(x=heartData2[[input$xvar1]]))
-      g+ geom_histogram()+xlab(input$xvar1)
+      g <- ggplot (data=hrtdata(), aes(x=hrtdata()[[input$xvar1B]]))
+      g+ geom_histogram()+xlab(input$xvar1B)
     } else if (input$plottype =="box" ) {
-      g <- ggplot (data=heartData2, aes(x=as.factor(heartData2[[input$xvar2]]), y=heartData2[[input$yvar]]))
+      g <- ggplot (data=hrtdata(), aes(x=as.factor(hrtdata()[[input$xvar2]]), y=hrtdata()[[input$yvar]]))
       g + geom_boxplot()+geom_jitter(alpha=0.5)+xlab(input$xvar2)+ylab(input$yvar)       
     }
   })
@@ -583,10 +666,10 @@ server <- shinyServer(function(input, output) {
   
   #Output a scatter plot with hovering text  
   output$scatterTxt <- renderPlotly({
-    x=heartData2[[input$xvar2]]
-    y=heartData2[[input$yvar]]
+    x=hrtdata()[[input$xvar2]]
+    y=hrtdata()[[input$yvar]]
     if (input$plottype =="point"){
-       ggplotly( ggplot (data=heartData2, aes(x, y))
+       ggplotly( ggplot (data=hrtdata(), aes(x, y))
        + geom_point()+ xlab(input$xvar2)+ylab(input$yvar))    
     } 
   })
