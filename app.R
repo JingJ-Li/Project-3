@@ -225,9 +225,8 @@ ui <- dashboardPage(skin="blue",
                                              #set row variable input choice for contingency table
                                              selectInput("var2", 
                                                          label=("Row Variables For Contingency table"),
-                                                         c(
-                                                           "high_blood_pressure"="high_blood_pressure",
-                                                           "sex"="sex",
+                                                         c("sex"="sex",
+                                                           "high_blood_pressure"="high_blood_pressure",                                                           
                                                            "smoking"="smoking",
                                                            "DEATH_EVENT"= "DEATH_EVENT",
                                                            "creatinine_phosphokinase"="creatinine_phosphokinase",
@@ -243,7 +242,7 @@ ui <- dashboardPage(skin="blue",
                                              ##set column variable input choice for contingency table
                                              selectInput("var3", 
                                                          label=("Column Variables For Contingency table"),
-                                                         c("Age"= "age_range", 
+                                                         c(
                                                            "high_blood_pressure"="high_blood_pressure",
                                                            "sex"="sex",
                                                            "smoking"="smoking",
@@ -253,7 +252,8 @@ ui <- dashboardPage(skin="blue",
                                                            "platelets"="platelets",
                                                            "serum_creatinine"= "serum_creatinine",
                                                            "serum_sodium"=  "serum_sodium",
-                                                           "time"= "time"
+                                                           "time"= "time",
+                                                           "Age"= "age_range" 
 
                                                          ) 
                                              )
@@ -299,8 +299,7 @@ ui <- dashboardPage(skin="blue",
                                                              selectInput("xvar1A",
                                                                             h5("X variable for bar",
                                                                                style ="color:grey;"),
-                                                                            c("Age"= "age_range", 
-                                                                              "creatinine_phosphokinase"="creatinine_phosphokinase",
+                                                                            c(
                                                                               "diabetes"="diabetes",
                                                                               "ejection_fraction"= "ejection_fraction",
                                                                               "high_blood_pressure"="high_blood_pressure",
@@ -310,7 +309,9 @@ ui <- dashboardPage(skin="blue",
                                                                               "sex"="sex",
                                                                               "smoking"="smoking",
                                                                               "time"= "time",
-                                                                              "DEATH_EVENT"= "DEATH_EVENT"
+                                                                              "DEATH_EVENT"= "DEATH_EVENT",
+                                                                              "Age"= "age_range", 
+                                                                              "creatinine_phosphokinase"="creatinine_phosphokinase"
                                                                             )
                                                                )
                                                   
