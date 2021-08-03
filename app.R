@@ -125,7 +125,7 @@ ui <- dashboardPage(skin="blue",
                                          box( width=12,          
                                              #Set input choice of variable for numeric summary table
                                              selectInput("var", 
-                                                          label=("Variables for subseting data and summary "),
+                                                          label=("Variables for subseting data "),
                                                          c("age"= "age", 
                                                            "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                            "diabetes"="diabetes",
@@ -225,8 +225,8 @@ ui <- dashboardPage(skin="blue",
                                              #set row variable input choice for contingency table
                                              selectInput("var2", 
                                                          label=("Row Variables For Contingency table"),
-                                                         c("Age"= "age2", 
-                                                           "Hi_Bld_Pres"="high_blood_pressure",
+                                                         c(
+                                                           "high_blood_pressure"="high_blood_pressure",
                                                            "sex"="sex",
                                                            "smoking"="smoking",
                                                            "DEATH_EVENT"= "DEATH_EVENT",
@@ -235,14 +235,15 @@ ui <- dashboardPage(skin="blue",
                                                            "platelets"="platelets",
                                                            "serum_creatinine"= "serum_creatinine",
                                                            "serum_sodium"=  "serum_sodium",
-                                                           "time"= "time"
+                                                           "time"= "time",
+                                                           "Age"= "age_range"
                                                          ) 
                                              ),
                                              
                                              ##set column variable input choice for contingency table
                                              selectInput("var3", 
                                                          label=("Column Variables For Contingency table"),
-                                                         c("Age"= "age2", 
+                                                         c("Age"= "age_range", 
                                                            "high_blood_pressure"="high_blood_pressure",
                                                            "sex"="sex",
                                                            "smoking"="smoking",
@@ -298,11 +299,11 @@ ui <- dashboardPage(skin="blue",
                                                              selectInput("xvar1A",
                                                                             h5("X variable for bar",
                                                                                style ="color:grey;"),
-                                                                            c("Age"= "age2", 
+                                                                            c("Age"= "age_range", 
                                                                               "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                                               "diabetes"="diabetes",
-                                                                              "EjctFrt"= "ejection_fraction",
-                                                                              "Hi_Bld_Pres"="high_blood_pressure",
+                                                                              "ejection_fraction"= "ejection_fraction",
+                                                                              "high_blood_pressure"="high_blood_pressure",
                                                                               "platelets"="platelets",
                                                                               "serum_creatinine"= "serum_creatinine",
                                                                               "serum_sodium"=  "serum_sodium",
@@ -320,7 +321,7 @@ ui <- dashboardPage(skin="blue",
                                                                                style ="color:grey;"),
                                                                             c("Age"= "age", 
                                                                               "creatinine_phosphokinase"="creatinine_phosphokinase",                                                                             
-                                                                              "EjctFrt"= "ejection_fraction",                                                                             
+                                                                              "ejection_fraction"= "ejection_fraction",                                                                             
                                                                               "platelets"="platelets",
                                                                               "serum_creatinine"= "serum_creatinine",
                                                                               "serum_sodium"=  "serum_sodium",                                                                             
@@ -335,11 +336,11 @@ ui <- dashboardPage(skin="blue",
                                                                    selectInput("xvar2",
                                                                                   h5("X variable for box/scatter",
                                                                                   style ="color:grey;"),
-                                                                                 c("Age"= "age2", 
+                                                                                 c("Age"= "age_range", 
                                                                                    "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                                                    "diabetes"="diabetes",
-                                                                                    "EjctFrt"= "ejection_fraction",
-                                                                                   "Hi_Bld_Pres"="high_blood_pressure",
+                                                                                    "ejection_fraction"= "ejection_fraction",
+                                                                                   "high_blood_pressure"="high_blood_pressure",
                                                                                    "platelets"="platelets",
                                                                                    "serum_creatinine"= "serum_creatinine",
                                                                                    "serum_sodium"=  "serum_sodium",
@@ -356,10 +357,10 @@ ui <- dashboardPage(skin="blue",
                                                                                    h5("Y variable for box/scatter plot",
                                                                                    style ="color:grey;"),
                                                                                    c( 
-                                                                                     "Crtn_phos"="creatinine_phosphokinase",
+                                                                                     "creatinine_phosphokinase"="creatinine_phosphokinase",
                                                                                      "diabetes"="diabetes",
-                                                                                     "EjctFrt"= "ejection_fraction",
-                                                                                     "Hi_Bld_Pres"="high_blood_pressure",
+                                                                                     "ejection_fraction"= "ejection_fraction",
+                                                                                     "high_blood_pressure"="high_blood_pressure",
                                                                                      "platelets"="platelets",
                                                                                      "serum_creatinine"= "serum_creatinine",
                                                                                      "serum_sodium"=  "serum_sodium",
@@ -592,8 +593,8 @@ server <- shinyServer(function(input, output) {
     # read in data and convert forms
     heartData <- read_csv("heart_failure_clinical_records_dataset.csv")
     heartData$DEATH_EVENT<-as.factor(heartData$DEATH_EVENT)
-    heartData$age2 <- cut(heartData$age, c(0,40,50,60,70,80,100) )
-    heartData2 <- mutate(heartData, age2)
+    heartData$age_range <- cut(heartData$age, c(0,40,50,60,70,80,100) )
+    heartData2 <- mutate(heartData, age_range)
     heartData2$anaemia <-as.factor(heartData2$anaemia)
     heartData2$high_blood_pressure <-as.factor(heartData2$high_blood_pressure)
     heartData2$sex <-as.factor(heartData2$sex)
@@ -668,24 +669,26 @@ server <- shinyServer(function(input, output) {
            else if (input$sumtype =="sd") {data.frame(var,round(summarise (hrtdata(),SD=sd(hrtdata()[[var]])),2))}
   })
   
-  #Create a contigency table
+  #Create a contingency table
   output$Tab3 <- DT::renderDataTable({
     validate(need(input$var2,''),
-             need(input$var3,''))
+             need(input$var3,'')
+             )
     addmargins(xtabs(as.formula(paste0("~",input$var2,"+",input$var3)), hrtdata()))
-  })
+
+   })
   
   #create plots and make plots based on one variable and different variables respectively 
   plot <- reactive({
     if (input$plottype =="bar" ) {
       g <- ggplot (data=hrtdata(), aes(x=as.factor(hrtdata()[[input$xvar1A]])))
-      g + geom_bar()+xlab(input$xvar1A)     
+      g + geom_bar()+xlab(input$xvar1A) + ggtitle(paste("Counts of different", input$xvar1A))    
     } else if (input$plottype=="histogram" ) { 
       g <- ggplot (data=hrtdata(), aes(x=hrtdata()[[input$xvar1B]]))
-      g+ geom_histogram()+xlab(input$xvar1B)
+      g+ geom_histogram()+xlab(input$xvar1B) + ggtitle(paste("Histogram of ", input$xvar1B))  
     } else if (input$plottype =="box" ) {
       g <- ggplot (data=hrtdata(), aes(x=as.factor(hrtdata()[[input$xvar2]]), y=hrtdata()[[input$yvar]]))
-      g + geom_boxplot()+geom_jitter(alpha=0.5)+xlab(input$xvar2)+ylab(input$yvar)       
+      g + geom_boxplot()+geom_jitter(alpha=0.5)+xlab(input$xvar2)+ylab(input$yvar) + ggtitle(paste("Boxplot of ",  input$xvar2, "vs",input$yvar))      
     }
   })
   
@@ -700,7 +703,7 @@ server <- shinyServer(function(input, output) {
     y=hrtdata()[[input$yvar]]
     if (input$plottype =="point"){
        ggplotly( ggplot (data=hrtdata(), aes(x, y))
-       + geom_point()+ xlab(input$xvar2)+ylab(input$yvar))    
+       + geom_point()+ xlab(input$xvar2)+ylab(input$yvar))      
     } 
   })
 
