@@ -106,7 +106,7 @@ ui <- dashboardPage(skin="blue",
                                                           label=("The maximum row number"), 
                                                           min=1,
                                                           max=299, 
-                                                          value=13)
+                                                          value=100)
                                              ),
                                          downloadButton('dataset',"Download the data")
                                     ),
